@@ -137,6 +137,10 @@ void ImuFilter::madgwickAHRSupdate(
 		qDot3 -= gain_ * s2;
 		qDot4 -= gain_ * s3;
 	} else{
+		gx -= w_bx_;
+		gy -= w_by_;
+		gz -= w_bz_;
+
 		// Rate of change of quaternion from gyroscope
 		qDot1 = 0.5f * (-q1 * gx - q2 * gy - q3 * gz);
 		qDot2 = 0.5f * ( q0 * gx + q2 * gz - q3 * gy);
@@ -167,12 +171,7 @@ void ImuFilter::madgwickAHRSupdateIMU(
 	float s0, s1, s2, s3;
 	float qDot1, qDot2, qDot3, qDot4;
 	float _2q0, _2q1, _2q2, _2q3, _4q0, _4q1, _4q2 ,_8q1, _8q2, q0q0, q1q1, q2q2, q3q3;
-
-	// Rate of change of quaternion from gyroscope
-	qDot1 = 0.5f * (-q1 * gx - q2 * gy - q3 * gz);
-	qDot2 = 0.5f * ( q0 * gx + q2 * gz - q3 * gy);
-	qDot3 = 0.5f * ( q0 * gy - q1 * gz + q3 * gx);
-	qDot4 = 0.5f * ( q0 * gz + q1 * gy - q2 * gx);
+	float _w_err_x, _w_err_y, _w_err_z;
 
 	// Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
 	if(!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) 
@@ -209,11 +208,40 @@ void ImuFilter::madgwickAHRSupdateIMU(
 		s2 *= recipNorm;
 		s3 *= recipNorm;
 
+		// compute gyro drift bias
+		_w_err_x = _2q0 * s1 - _2q1 * s0 - _2q2 * s3 + _2q3 * s2;
+		_w_err_y = _2q0 * s2 + _2q1 * s3 - _2q2 * s0 - _2q3 * s1;
+		_w_err_z = _2q0 * s3 - _2q1 * s2 + _2q2 * s1 - _2q3 * s0;
+
+		w_bx_ += _w_err_x * dt * zeta_;
+		w_by_ += _w_err_y * dt * zeta_;
+		w_bz_ += _w_err_z * dt * zeta_;
+
+		gx -= w_bx_;
+		gy -= w_by_;
+		gz -= w_bz_;
+
+		// Rate of change of quaternion from gyroscope
+		qDot1 = 0.5f * (-q1 * gx - q2 * gy - q3 * gz);
+		qDot2 = 0.5f * ( q0 * gx + q2 * gz - q3 * gy);
+		qDot3 = 0.5f * ( q0 * gy - q1 * gz + q3 * gx);
+		qDot4 = 0.5f * ( q0 * gz + q1 * gy - q2 * gx);
+
 		// Apply feedback step
 		qDot1 -= gain_ * s0;
 		qDot2 -= gain_ * s1;
 		qDot3 -= gain_ * s2;
 		qDot4 -= gain_ * s3;
+	} else{
+		gx -= w_bx_;
+		gy -= w_by_;
+		gz -= w_bz_;
+
+		// Rate of change of quaternion from gyroscope
+		qDot1 = 0.5f * (-q1 * gx - q2 * gy - q3 * gz);
+		qDot2 = 0.5f * ( q0 * gx + q2 * gz - q3 * gy);
+		qDot3 = 0.5f * ( q0 * gy - q1 * gz + q3 * gx);
+		qDot4 = 0.5f * ( q0 * gz + q1 * gy - q2 * gx);
 	}
 
 	// Integrate rate of change of quaternion to yield quaternion
