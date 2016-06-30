@@ -287,6 +287,8 @@ void ImuFilterRos::publishFilteredMsg(const ImuMsg::ConstPtr& imu_msg_raw)
 {
   double q0,q1,q2,q3;
   filter_.getOrientation(q0,q1,q2,q3);
+  double w_bx, w_by, w_bz;
+  filter_.getDriftBias(w_bx, w_by, w_bz);
 
   // create and publish filtered IMU message
   boost::shared_ptr<ImuMsg> imu_msg =
@@ -306,6 +308,10 @@ void ImuFilterRos::publishFilteredMsg(const ImuMsg::ConstPtr& imu_msg_raw)
   imu_msg->orientation_covariance[6] = 0.0;
   imu_msg->orientation_covariance[7] = 0.0;
   imu_msg->orientation_covariance[8] = orientation_variance_;
+
+  imu_msg->angular_velocity.x -= w_bx;
+  imu_msg->angular_velocity.y -= w_by;
+  imu_msg->angular_velocity.z -= w_bz;
 
   imu_publisher_.publish(imu_msg);
 

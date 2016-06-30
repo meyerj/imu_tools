@@ -79,6 +79,13 @@ public:
         q3 = this->q3;
     }
 
+    void getDriftBias(double& w_bx, double& w_by, double& w_bz)
+    {
+        w_bx = this->w_bx_;
+        w_by = this->w_by_;
+        w_bz = this->w_bz_;
+    }
+
     void setOrientation(double q0, double q1, double q2, double q3)
     {
         this->q0 = q0;

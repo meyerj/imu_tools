@@ -5,7 +5,7 @@
  *  http://robotics.ccny.cuny.edu
  *
  *  Based on implementation of Madgwick's IMU and AHRS algorithms.
- *  http://www.x-io.co.uk/node/8#open_source_ahrs_and_imu_algorithms
+ *  http://www.x-io.co.uk/open-source-imu-and-ahrs-algorithms/
  *
  *
  *  This program is free software: you can redistribute it and/or modify
